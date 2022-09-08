@@ -101,14 +101,16 @@ monetary_value smallint not null check(monetary_value >= 1 AND monetary_value <=
 insert into analysis.dm_rfm_segments
 with rfm_data as (
 select
-o.user_id,
-max(o.order_ts) as recency,
-count(o.*) as frequency,
-sum(o.payment) as monetary_value
+u.id as user_id,
+coalesce(max(o.order_ts), (select min(o.order_ts) from production.orders o)) as recency,
+coalesce(count(o.*), 0) as frequency,
+coalesce(sum(o.payment), 0) as monetary_value
 from production.orders o
 inner join production.orderstatuses os
 on o.status=os.id and os.key='Closed' and extract('year' from o.order_ts)=2022
-group by user_id
+full join production.users u
+on o.user_id = u.id
+group by u.id
 ),
 percentiles as (
 select
