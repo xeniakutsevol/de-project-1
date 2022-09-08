@@ -22,12 +22,12 @@ group by o.status, s.key
 order by o.status;
 
 -- Создание представлений схемы production
-create view analysis.orders as select * from production.orders;
-create view analysis.orderstatuses as select * from production.orderstatuses;
-create view analysis.orderstatuslog as select * from production.orderstatuslog;
-create view analysis.orderitems as select * from production.orderitems;
-create view analysis.products as select * from production.products;
-create view analysis.users as select * from production.users;
+create or replace view analysis.orders as select * from production.orders;
+create or replace view analysis.orderstatuses as select * from production.orderstatuses;
+create or replace view analysis.orderstatuslog as select * from production.orderstatuslog;
+create or replace view analysis.orderitems as select * from production.orderitems;
+create or replace view analysis.products as select * from production.products;
+create or replace view analysis.users as select * from production.users;
 
 -- DDL для dm_rfm_segments
 drop table if exists analysis.dm_rfm_segments;
@@ -49,7 +49,7 @@ count(*) as frequency,
 sum(payment) as monetary_value
 from production.orders o
 inner join production.orderstatuses os
-on o.status=os.id and os.key='Closed'
+on o.status=os.id and os.key='Closed' and extract('year' from o.order_ts)=2022
 group by user_id
 ),
 percentiles as (
